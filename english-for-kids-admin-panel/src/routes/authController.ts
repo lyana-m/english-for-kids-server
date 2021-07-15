@@ -1,8 +1,9 @@
-// const express = require('express');
 import * as express from 'express';
-const Admin = require('../models/admin');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { MongoClient } = require('mongodb');
+
+const client = MongoClient(process.env.DB);
 
 const secret = 'SECRET_KEY'
 
@@ -17,7 +18,10 @@ const generateAccessToken = (id: string, login: string) => {
 export const login = async (req: express.Request, res: express.Response) => {
   try {
     const { login, password } = req.body;
-    const admin = await Admin.findOne({login});
+    await client.connect();
+    const admins = client.db().collection('admins');
+    const admin = await admins.findOne({login});
+    client.close();
 
     if (!admin) {
       res.status(400).json({message: 'Wrong login'})
