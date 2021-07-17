@@ -1,5 +1,6 @@
 import * as express from 'express';
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -16,7 +17,8 @@ export const getCategories = async (req: express.Request, res: express.Response)
     const categories = await client.db().collection('categories').find().sort({ name: 1 }).toArray();
     const words = await client.db().collection('words').find().toArray();
     const categoryWithCount = categories.map((category: any) => {
-      return { ...category, count: words.filter((word: any) => word.categoryId === `${category._id}`).length };
+      const filteredWords = words.filter((word: any) => word.categoryId === `${category._id}`);
+      return { ...category, count: filteredWords.length, image: filteredWords[0] ? filteredWords[0].image : null};
     });
     res.send(categoryWithCount);
   } catch (e) {
@@ -30,7 +32,7 @@ export const getWords = async (req: express.Request, res: express.Response) => {
   const client = MongoClient(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true });
   try {
     await client.connect();
-    const words = await client.db().collection('words').find(req.query).toArray();
+    const words = await client.db().collection('words').find({categoryId: req.query.categoryId}).toArray();
     res.send(words);
   } catch (e) {
     throw Error(e);
@@ -79,3 +81,44 @@ export const createWord = async (req: any, res: any, next: any) => {
     await client.close();
   }
 };
+
+export const createCategory = async (req: any, res: any, next: any) => {
+  const client = MongoClient(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true });
+  try {
+    await client.connect();
+    const newCategory = {name: req.body.name};
+    await client.db().collection('categories').insert(newCategory);
+    res.sendStatus(200);
+    } catch (error) {
+    throw Error(error);
+  } finally {
+    await client.close();
+  }
+}
+
+export const updateCategory = async (req: any, res: any, next: any) => {
+  const client = MongoClient(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true });
+  try {
+    await client.connect();
+    await client.db().collection('categories').update({_id: ObjectId(req.body.categoryId)}, {$set: {name: req.body.name}});
+    res.sendStatus(200);
+    } catch (error) {
+    throw Error(error);
+  } finally {
+    await client.close();
+  }
+}
+
+export const deleteCategory = async (req: any, res: any, next: any) => {
+  const client = MongoClient(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true });
+  try {
+    await client.connect();
+    await client.db().collection('categories').deleteOne({_id: ObjectId(req.query.id)});
+    await client.db().collection('words').deleteMany({categoryId: req.query.id});
+    res.sendStatus(200);
+    } catch (error) {
+    throw Error(error);
+  } finally {
+    await client.close();
+  }
+}

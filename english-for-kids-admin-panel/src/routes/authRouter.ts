@@ -3,7 +3,7 @@ const router = new Router();
 const login = require('./authController');
 var multer = require('multer')
 import { authenticateToken } from '../helpers/helpers';
-import { createWord, getCategories, getWords } from './dataController';
+import { createCategory, createWord, deleteCategory, getCategories, getWords, updateCategory } from './dataController';
 
 var storage = multer.diskStorage({
   destination: function (req: any, file: any, cb: any) {
@@ -18,6 +18,9 @@ const upload = multer({ storage: storage });
 
 router.post('/login', login);
 router.get('/categories', authenticateToken, getCategories);
+router.post('/categories', upload.none(), createCategory);
+router.put('/categories', upload.none(), updateCategory);
+router.delete('/categories', deleteCategory);
 router.get('/words', authenticateToken, getWords);
 router.post("/words", upload.fields([{
   name: 'image',

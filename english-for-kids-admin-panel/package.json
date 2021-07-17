@@ -8,6 +8,9 @@
     "lint:fix": "eslint --fix --ext .ts,.js .",
     "format": "prettier --write src/**/*.ts{,x}"
   },
+  "engines": {
+    "node": "14.17.0"
+  },
   "dependencies": {
     "@types/nodemon": "^1.19.1",
     "bcrypt": "^5.0.1",

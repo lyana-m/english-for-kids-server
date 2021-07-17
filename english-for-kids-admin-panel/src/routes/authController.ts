@@ -3,8 +3,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { MongoClient } = require('mongodb');
 
-const client = MongoClient(process.env.DB);
-
 const secret = 'SECRET_KEY'
 
 const generateAccessToken = (id: string, login: string) => {
@@ -16,6 +14,7 @@ const generateAccessToken = (id: string, login: string) => {
 };
 
 export const login = async (req: express.Request, res: express.Response) => {
+  const client = MongoClient(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true });
   try {
     const { login, password } = req.body;
     await client.connect();
