@@ -1,9 +1,10 @@
 const express = require('express');
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
-const authRouter = require('./routes/authRouter');
+const authRouter = require('./router/index');
 const cors = require('cors');
-var bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
 const client = MongoClient(process.env.DB);
 
@@ -17,7 +18,11 @@ app.use(cors());
 app.use('', authRouter);
 
 const start = async () => {
-  try {  
+  try {
+    await mongoose.connect(process.env.DB, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
     app.listen(PORT, () => console.log(`server started on port ${PORT}`));
   } catch (e) {
     console.log(e);
